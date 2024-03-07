@@ -1,0 +1,83 @@
+basePath: /
+definitions:
+  entity.DroneModelEnum:
+    enum:
+    - Light
+    - Middle
+    - Cruiser
+    - Heavy
+    type: string
+    x-enum-varnames:
+    - Light
+    - Middle
+    - Cruiser
+    - Heavy
+  entity.DroneRequest:
+    properties:
+      battery_capacity:
+        type: integer
+      drone_model:
+        $ref: '#/definitions/entity.DroneModelEnum'
+      serial_number:
+        type: string
+      state:
+        $ref: '#/definitions/entity.DroneStateEnum'
+      weight_limit:
+        type: integer
+    type: object
+  entity.DroneStateEnum:
+    enum:
+    - IDLE
+    - LOADING
+    - DELIVERED
+    - RETURNING
+    type: string
+    x-enum-varnames:
+    - IDLE
+    - LOADING
+    - DELIVERED
+    - RETURNING
+host: localhost:8010
+info:
+  contact:
+    email: soberkoder@swagger.io
+    name: API Support
+  description: This is a sample serice for managing Drones
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Drones API
+  version: 1.16.3
+paths:
+  /drone:
+    post:
+      consumes:
+      - application/json
+      description: Create a new drone entity
+      parameters:
+      - description: Request of Creating Drone
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/entity.DroneRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.DroneRequest'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Create a new drone
+      tags:
+      - Drone
+swagger: "2.0"
