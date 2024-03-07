@@ -1,0 +1,6 @@
+gorm.io/gorm v1.25.7
+gorm.io/driver/postgres v1.5.6
+github.com/gorilla/mux v1.8.1
+github.com/swaggo/http-swagger v1.3.4 
+github.com/swaggo/swag v1.16.3 
+github.com/alecthomas/template
