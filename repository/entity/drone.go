@@ -4,7 +4,7 @@ import "gorm.io/gorm"
 
 type Drone struct {
 	gorm.Model
-	SerialNumber    string         `json:"serial_number" gorm:"size:100"`
+	SerialNumber    string         `json:"serial_number" gorm:"size:100;unique"`
 	DroneModel      DroneModelEnum `json:"drone_model"`
 	WeightLimit     uint           `json:"weight_limit" gorm:"check:weight_limit <= 500"`
 	BatteryCapacity uint           `json:"battery_capacity" gorm:"check:battery_capacity <= 100"`
