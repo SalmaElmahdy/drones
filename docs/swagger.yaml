@@ -23,7 +23,7 @@ definitions:
       state:
         $ref: '#/definitions/entity.DroneStateEnum'
       weight_limit:
-        type: integer
+        type: number
     type: object
   entity.DroneStateEnum:
     enum:

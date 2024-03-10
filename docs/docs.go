@@ -102,7 +102,7 @@ const docTemplate = `{
                     "$ref": "#/definitions/entity.DroneStateEnum"
                 },
                 "weight_limit": {
-                    "type": "integer"
+                    "type": "number"
                 }
             }
         },

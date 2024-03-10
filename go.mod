@@ -5,9 +5,11 @@ go 1.21.3
 require (
 	ariga.io/atlas-provider-gorm v0.1.0
 	github.com/gorilla/mux v1.8.1
+	github.com/stretchr/testify v1.9.0
 	github.com/swaggo/http-swagger v1.3.4
 	github.com/swaggo/swag v1.16.3
 	gorm.io/driver/postgres v1.5.6
+	gorm.io/driver/sqlite v1.5.2
 	gorm.io/gorm v1.25.7
 )
 
@@ -39,5 +41,4 @@ require (
 	golang.org/x/tools v0.19.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	gorm.io/driver/mysql v1.5.1 // indirect
-	gorm.io/driver/sqlite v1.5.2 // indirect
 )
