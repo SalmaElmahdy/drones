@@ -1,0 +1,49 @@
+# Drones Go Project
+
+This project implements a simple HTTP server in Go for managing drones.
+
+## Getting Started
+
+To get started with this project, follow these steps:
+
+### Prerequisites
+
+- Go installed on your machine. You can download it from [here](https://golang.org/dl/).
+- Make sure your `$GOPATH` is set correctly. You can follow the instructions [here](https://golang.org/doc/install).
+
+### Features
+
+- user could register new drone
+
+### Installation
+
+1. Clone this repository:
+
+    ```bash
+    git clone https://github.com/SalmaElmahdy/drones.git
+    cd drones
+    ```
+
+2. Install dependencies:
+
+    ```bash
+    go mod tidy
+    ```
+
+### Running the Server
+
+To run the server, execute the following command:
+
+```bash 
+make run
+```
+
+To run test cases, execute the following command:
+```bash 
+make test
+```
+
+
+###### For accessing the API documentation via Swagger at 
+
+`http://localhost:8010/swagger/index.html`

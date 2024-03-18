@@ -1,6 +1,7 @@
 package http
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -22,5 +23,6 @@ func StartServer(api APIs) {
 
 	}).Methods("POST")
 	r.PathPrefix("/swagger").Handler(httpSwagger.WrapHandler)
+	fmt.Println("server running on port:8010")
 	log.Fatal(http.ListenAndServe(":8010", r))
 }
