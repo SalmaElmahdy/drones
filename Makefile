@@ -22,3 +22,6 @@ make_migrations:
 
 migrate:
 	atlas migrate apply --env local --allow-dirty
+
+test:
+	@go test -v ./...
