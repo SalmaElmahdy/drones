@@ -1,5 +1,7 @@
-h1:AlpCdOGidDVjbjrHbT/EQyFAGjKPZ2Ed4LHTE11FaMM=
+h1:0HZh1DApfG7uLdTdCOqVPG7sQnOUmw0vPav5gcSpfGU=
 20240309214737_initial.sql h1:yygbynRY41HGJAtlYDOr4Jua/v7r7ukyE+oK82SFYL8=
 20240309214836_add_unique_serialnumber.sql h1:hB+r3Y5fdg7r0PuRdyrmX/7dgGgKikwitZvyAz5Ap5w=
 20240310232317_convert_weightlimit_float.sql h1:bQH7RszPwlV8eQ2EMlxrB3k38uLzqHzrZcrs/apOmpo=
 20240313125107_update_serialnumber_size.sql h1:griYwT2TrQPxxHpQZVG/s3OOmMK/B8RyixZp9VP5Q7A=
+20240318233136_add_active_field.sql h1:oDF8/MsRQEjYKGuf4qOoaHzaBbR9IjCU9JEx8NepTng=
+20240320021110_remove_active_filed.sql h1:EIBDDJ6uTL0DNUNfPN4n7O7PCzdQhhzmEr7qO6gm18U=
