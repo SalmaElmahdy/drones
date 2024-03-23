@@ -4,11 +4,11 @@ import "gorm.io/gorm"
 
 type Drone struct {
 	gorm.Model
-	SerialNumber    string         `json:"serial_number" gorm:"size:150;unique"`
-	DroneModel      DroneModelEnum `json:"drone_model"`
-	WeightLimit     float64        `json:"weight_limit" gorm:"check:weight_limit <= 500"`
-	BatteryCapacity uint           `json:"battery_capacity" gorm:"check:battery_capacity <= 100"`
-	State           DroneStateEnum `json:"state"`
+	SerialNumber    string         `gorm:"not null;size:100;unique"`
+	DroneModel      DroneModelEnum `gorm:"not null"`
+	WeightLimit     float64        `gorm:"not null;check:weight_limit <= 500"`
+	BatteryCapacity uint           `gorm:"not null;check:battery_capacity <= 100"`
+	State           DroneStateEnum `gorm:"not null;default:IDLE"`
 }
 type DroneModelEnum string
 
