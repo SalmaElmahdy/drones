@@ -1,6 +1,8 @@
 package entity
 
-import "gorm.io/gorm"
+import (
+	"gorm.io/gorm"
+)
 
 type Drone struct {
 	gorm.Model
@@ -29,9 +31,9 @@ const (
 )
 
 type DroneRequest struct {
-	SerialNumber    string         `json:"serial_number"`
-	DroneModel      DroneModelEnum `json:"drone_model"`
-	WeightLimit     float64        `json:"weight_limit"`
-	BatteryCapacity uint           `json:"battery_capacity"`
-	State           DroneStateEnum `json:"state"`
+	SerialNumber    string         `json:"serial_number" valid:"required~serial_number is required,int~serial_number accepts only numbers"`
+	DroneModel      DroneModelEnum `json:"drone_model" valid:"required~drone_model is required,drone_model"`
+	WeightLimit     float64        `json:"weight_limit" valid:"required~weight_limit is required,range(0|500)"`
+	BatteryCapacity uint           `json:"battery_capacity" valid:"required~battery_capacity is required,range(0|100)"`
+	State           DroneStateEnum `json:"state" valid:"required~state is required,state"`
 }

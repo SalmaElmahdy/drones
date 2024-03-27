@@ -50,6 +50,7 @@ func (api DroneAPIs) Create(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(fmt.Sprintf(`{ "error" : "%s"}`, err.Error())))
 		return
 	}
+
 	response, err := api.droneUseCase.Create(ctx, requestByte)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
