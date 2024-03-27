@@ -18,10 +18,15 @@ make_migrations:
         exit 1; \
     fi
 	atlas migrate diff "$(NAME)" --env gorm
-#export PATH=$(go env GOPATH)/bin:$PATH
 
 migrate:
 	atlas migrate apply --env local --allow-dirty
 
 test:
 	@go test -v ./...
+
+seeds-up:
+	go run -mod=mod main.go -seeds
+
+seeds-clear:
+	go run -mod=mod main.go -clearseeds

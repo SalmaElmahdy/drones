@@ -201,7 +201,6 @@ func TestCreateDrone(t *testing.T) {
 			test.name, func(t *testing.T) {
 				droneUseCase := NewDroneUseCase(test.mocks.mockedDroneRepository)
 				got, err := droneUseCase.Create(test.args.ctx, test.args.request)
-				fmt.Println("gooooooot", string(got))
 				if err != nil {
 					assert.EqualError(t, err, test.wantedErr)
 					return
