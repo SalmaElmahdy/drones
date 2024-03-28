@@ -15,7 +15,7 @@ import (
 	"gorm.io/gorm"
 )
 
-var seedFlag = flag.Bool("seedsup", false, "Seed the database")
+var seedFlag = flag.Bool("seeds", false, "Seed the database")
 var clearSeedFlag = flag.Bool("clearseeds", false, "Clear seeds from the database")
 
 func main() {

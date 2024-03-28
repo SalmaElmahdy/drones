@@ -15,6 +15,13 @@ To get started with this project, follow these steps:
 
 - user could register new drone
 
+### Data Validations
+- Serial Number: Accepts only integers.
+- Weight Limit: Accepts only float values between 0 and 500.
+- Battery Capacity: Accepts only integers between 0 and 100.
+- State should be IDLE or LOADING or DELIVERED or RETURNING
+- Drone Model should be Light or Middle or Cruiser or Heavy
+
 ### Installation
 
 1. Clone this repository:
@@ -32,7 +39,30 @@ To get started with this project, follow these steps:
 
 ### Running the Server
 
-To run the server, execute the following command:
+- run make migrations, execute the following command:
+
+```bash 
+make make_migrations
+```
+- run migrate command, execute the following command:
+
+```bash 
+make migrate
+```
+
+if you want to seeds your database, execute the following command:
+
+```bash 
+make seeds-up
+```
+
+if you want to clear your database, execute the following command:
+
+```bash 
+make seeds-clear
+```
+
+- To run the server, execute the following command:
 
 ```bash 
 make run
