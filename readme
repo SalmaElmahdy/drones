@@ -34,6 +34,7 @@ To get started with this project, follow these steps:
 2. Install dependencies:
 
     ```bash
+    go get
     go mod tidy
     ```
 
@@ -43,11 +44,10 @@ To get started with this project, follow these steps:
 
 ```bash 
 make make_migrations
-```
-- run migrate command, execute the following command:
 
-```bash 
 make migrate
+ 
+make run
 ```
 
 if you want to seeds your database, execute the following command:
@@ -61,13 +61,6 @@ if you want to clear your database, execute the following command:
 ```bash 
 make seeds-clear
 ```
-
-- To run the server, execute the following command:
-
-```bash 
-make run
-```
-
 To run test cases, execute the following command:
 ```bash 
 make test
