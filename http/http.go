@@ -11,7 +11,8 @@ import (
 )
 
 type APIs struct {
-	DroneAPIs apis.DroneAPIs
+	DroneAPIs      apis.DroneAPIs
+	MedicationAPIs apis.MedicationAPIs
 }
 
 func StartServer(api APIs) {
@@ -20,6 +21,12 @@ func StartServer(api APIs) {
 	droneSubRouter := r.PathPrefix("/drone").Subrouter()
 	droneSubRouter.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		api.DroneAPIs.Create(w, r)
+
+	}).Methods("POST")
+
+	medicationSubRouter := r.PathPrefix("/medication").Subrouter()
+	medicationSubRouter.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		api.MedicationAPIs.Create(w, r)
 
 	}).Methods("POST")
 	r.PathPrefix("/swagger").Handler(httpSwagger.WrapHandler)

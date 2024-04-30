@@ -34,8 +34,13 @@ func main() {
 	droneUseCase := usecase.NewDroneUseCase(droneRepo)
 	droneAPIs := apis.NewDroneAPIs(droneUseCase)
 
+	medicationRepo := repository.NewMedicationRepository(db)
+	medicationUseCase := usecase.NewMedicationUseCase(medicationRepo)
+	medicationAPIs := apis.NewMedicationAPIs(medicationUseCase)
+
 	apis := serverHTTP.APIs{
-		DroneAPIs: droneAPIs,
+		DroneAPIs:      droneAPIs,
+		MedicationAPIs: medicationAPIs,
 	}
 
 	serverHTTP.StartServer(apis)
