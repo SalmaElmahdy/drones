@@ -1,4 +1,5 @@
-h1:7gFMaWyPt1HZEoCEJgZbGbF6ggsAEtRb0RUaLtD2Ouo=
+h1:tIYFgRn7jRu5JCfXcgRPxcXfVewLmqBqmQs+qhZ+osA=
 20240323000202_add_table_drone.sql h1:X++5SKRO5C/dACUiPkdX7Tdm45CfXXsDg1HigFiEfgg=
 20240430104039_add_medication_model.sql h1:BUWQNtbzG3ANGLSNOgBh2QgemsIpl7/Thnr/01hVcEY=
 20240430142959_rename_medication_fields.sql h1:IW1X10nRjaI2Z6/ZxOI6hgrmq7crc1tZgPaMExX8i0E=
+20240430231304_drone_medications.sql h1:eukCil5FltwXQIocyrpWgIpbz74o8ZpI3aKBZn+SNuY=

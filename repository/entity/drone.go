@@ -11,6 +11,7 @@ type Drone struct {
 	WeightLimit     float64        `gorm:"not null;check:weight_limit <= 500"`
 	BatteryCapacity uint           `gorm:"not null;check:battery_capacity <= 100"`
 	State           DroneStateEnum `gorm:"not null;default:IDLE"`
+	Medications     []Medication   `gorm:"many2many:drone_medications;"`
 }
 type DroneModelEnum string
 
@@ -36,4 +37,9 @@ type DroneRequest struct {
 	WeightLimit     float64        `json:"weight_limit" valid:"required~weight_limit is required,range(0|500)"`
 	BatteryCapacity uint           `json:"battery_capacity" valid:"required~battery_capacity is required,range(0|100)"`
 	State           DroneStateEnum `json:"state" valid:"required~state is required,state"`
+}
+
+type LoadMedicationsRequest struct {
+	DroneID     uint         `json:"drone_id"`
+	Medications []Medication `json:"medications"`
 }

@@ -12,6 +12,7 @@ import (
 
 type IDroneUseCase interface {
 	Create(ctx context.Context, request []byte) ([]byte, error)
+	GetLoadedMedications(ctx context.Context, id uint) ([]byte, error)
 }
 
 type DroneUseCase struct {
@@ -51,4 +52,13 @@ func (d DroneUseCase) Create(ctx context.Context, request []byte) ([]byte, error
 		return []byte{}, err
 	}
 	return json.Marshal(createdDrone)
+}
+
+func (d DroneUseCase) GetLoadedMedications(ctx context.Context, id uint) ([]byte, error) {
+	loadedMedications, err := d.droneRepository.GetLoadedMedications(ctx, id)
+	if err != nil {
+		fmt.Printf("[Error]: %v", err.Error())
+		return []byte{}, err
+	}
+	return json.Marshal(loadedMedications)
 }

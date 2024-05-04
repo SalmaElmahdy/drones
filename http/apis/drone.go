@@ -12,13 +12,16 @@
 package apis
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strconv"
 
 	_ "github.com/SalmaElmahdy/drones/docs"
 	"github.com/SalmaElmahdy/drones/usecase"
+	"github.com/gorilla/mux"
 )
 
 type DroneAPIs struct {
@@ -60,4 +63,33 @@ func (api DroneAPIs) Create(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	w.Write(response)
+}
+
+func (api DroneAPIs) GetLoadedMedications(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	vars := mux.Vars(r)
+	id, ok := vars["id"]
+	if !ok {
+		err := errors.New("ID is required")
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(fmt.Sprintf(`{ "error" : %q}`, err.Error())))
+		return
+	}
+	ID, err := strconv.Atoi(id)
+	if err != nil {
+		err := errors.New("invalid ID")
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(fmt.Sprintf(`{ "error" : %q}`, err.Error())))
+		return
+	}
+	response, err := api.droneUseCase.GetLoadedMedications(ctx, uint(ID))
+	if err != nil {
+		log.Printf("[Error]: %v", err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(fmt.Sprintf(`{ "error" : "%s"}`, err.Error())))
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	w.Write(response)
+
 }

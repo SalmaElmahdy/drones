@@ -9,8 +9,18 @@ import (
 
 type MockedDroneRepository struct{}
 
+// FindByID implements repository.IDroneRepository.
+func (MockedDroneRepository) FindByID(ctx context.Context, id uint) (entity.Drone, error) {
+	return entity.Drone{}, nil
+}
+
+// LoadMedications implements repository.IDroneRepository.
+func (MockedDroneRepository) LoadMedications(ctx context.Context, drone entity.Drone, medication []entity.Medication) error {
+	return nil
+}
+
 func NewMockedDroneRepository() repository.IDroneRepository {
-	return MockedDroneRepository{}
+	return nil
 }
 
 func (MockedDroneRepository) Create(ctx context.Context, drone entity.Drone) (entity.Drone, error) {
