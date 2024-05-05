@@ -9,7 +9,7 @@ type Medication struct {
 	Name   string  `gorm:"not null;"`
 	Weight float64 `gorm:"not null;gte=0"`
 	Code   string  `gorm:"not null;unique"`
-	Image  string  `gorm:"not null;unique"`
+	Image  string  `gorm:"not null;"`
 	Drones []Drone `gorm:"many2many:drone_medications;"`
 }
 

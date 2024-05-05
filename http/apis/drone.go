@@ -93,3 +93,24 @@ func (api DroneAPIs) GetLoadedMedications(w http.ResponseWriter, r *http.Request
 	w.Write(response)
 
 }
+
+func (api DroneAPIs) LoadMedications(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	requestByte, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		log.Printf("[Error]: %v", err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(fmt.Sprintf(`{ "error" : "%s"}`, err.Error())))
+		return
+	}
+
+	response, err := api.droneUseCase.LoadMedications(ctx, requestByte)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(fmt.Sprintf(`{ "error" : "%s"}`, err.Error())))
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write(response)
+}

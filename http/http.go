@@ -29,6 +29,11 @@ func StartServer(api APIs) {
 
 	}).Methods("GET")
 
+	droneSubRouter.HandleFunc("/load", func(w http.ResponseWriter, r *http.Request) {
+		api.DroneAPIs.LoadMedications(w, r)
+
+	}).Methods("POST")
+
 	medicationSubRouter := r.PathPrefix("/medication").Subrouter()
 	medicationSubRouter.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		api.MedicationAPIs.Create(w, r)

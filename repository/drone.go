@@ -40,8 +40,13 @@ func (dDB *DroneRepository) FindByID(ctx context.Context, id uint) (entity.Drone
 
 func (dDB *DroneRepository) Update(ctx context.Context, drone entity.Drone) (entity.Drone, error) {
 	result := dDB.client.Save(&drone)
+
 	if result.Error != nil {
 		return entity.Drone{}, result.Error
+	}
+
+	if err := dDB.client.Preload("Medications").First(&drone, drone.ID).Error; err != nil {
+		return entity.Drone{}, err
 	}
 	return drone, nil
 }

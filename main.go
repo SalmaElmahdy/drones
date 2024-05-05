@@ -31,11 +31,12 @@ func main() {
 	}
 
 	droneRepo := repository.NewDroneRepository(db)
-	droneUseCase := usecase.NewDroneUseCase(droneRepo)
-	droneAPIs := apis.NewDroneAPIs(droneUseCase)
-
 	medicationRepo := repository.NewMedicationRepository(db)
+
+	droneUseCase := usecase.NewDroneUseCase(droneRepo, medicationRepo)
 	medicationUseCase := usecase.NewMedicationUseCase(medicationRepo)
+
+	droneAPIs := apis.NewDroneAPIs(droneUseCase)
 	medicationAPIs := apis.NewMedicationAPIs(medicationUseCase)
 
 	apis := serverHTTP.APIs{
