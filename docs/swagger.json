@@ -4,7 +4,7 @@
         "contact": {}
     },
     "paths": {
-        "/drone": {
+        "/drone/": {
             "post": {
                 "description": "Create a new drone entity",
                 "consumes": [

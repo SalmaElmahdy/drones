@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	"github.com/SalmaElmahdy/drones/repository"
@@ -81,11 +82,21 @@ func (d DroneUseCase) LoadMedications(ctx context.Context, request []byte) ([]by
 		fmt.Printf("[Error]: %v", err.Error())
 		return []byte{}, err
 	}
+	if drone.State != entity.LOADING && drone.State != entity.IDLE {
+		err := errors.New("Invalid drone state")
+		fmt.Printf("[Error]: %v", err.Error())
+		return []byte{}, err
+	}
 
 	existingMedications, err := d.droneRepository.GetLoadedMedications(ctx, loadMedicationRequest.DroneID)
 	if err != nil {
 		fmt.Printf("[Error]: %v", err.Error())
 		return []byte{}, err
+	}
+
+	currentMedicationWeight := 0.0
+	for _, loadedMedication := range existingMedications {
+		currentMedicationWeight += loadedMedication.Weight
 	}
 
 	for _, reqMedication := range loadMedicationRequest.Medications {
@@ -118,7 +129,15 @@ func (d DroneUseCase) LoadMedications(ctx context.Context, request []byte) ([]by
 		}
 
 		if !alreadyLoaded {
-			drone.Medications = append(drone.Medications, medication)
+			currentMedicationWeight += medication.Weight
+			if currentMedicationWeight <= drone.WeightLimit {
+				drone.Medications = append(drone.Medications, medication)
+				drone.State = entity.LOADING
+			} else {
+				err := errors.New("medications exceed drone's weight limit")
+				fmt.Printf("[Error]: %v", err.Error())
+				return []byte{}, err
+			}
 		}
 	}
 

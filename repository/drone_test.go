@@ -9,7 +9,7 @@ import (
 )
 
 func TestCreateDrone(t *testing.T) {
-	db, err := setupTestDatabase()
+	db, err := SetupTestDatabase()
 	assert.NoError(t, err, "Error setting up test database")
 
 	defer func() {

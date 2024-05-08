@@ -13,8 +13,11 @@ import (
 )
 
 func TestCreateDrone(t *testing.T) {
+	db, err := repository.SetupTestDatabase()
+	assert.NoError(t, err, "Error setting up test database")
 	type mocks struct {
-		mockedDroneRepository repository.IDroneRepository
+		mockedDroneRepository      repository.IDroneRepository
+		mockedMedicationRepository repository.IMedicationRepository
 	}
 	type args struct {
 		ctx     context.Context
@@ -46,7 +49,7 @@ func TestCreateDrone(t *testing.T) {
 				BatteryCapacity: 70,
 				State:           entity.DroneStateEnum("IDLE"),
 			},
-			mocks: mocks{mockedDroneRepository: mock.NewMockedDroneRepository()},
+			mocks: mocks{mockedDroneRepository: mock.NewMockedDroneRepository(db), mockedMedicationRepository: mock.NewMockedMedicationRepository()},
 		},
 		{
 			name: "[Test] create drone with wrong drone_model should return Error",
@@ -61,7 +64,7 @@ func TestCreateDrone(t *testing.T) {
 				  }`),
 			},
 			wantedErr: "[Error]: drone_model: Dark does not validate as drone_model",
-			mocks:     mocks{mockedDroneRepository: mock.NewMockedDroneRepository()},
+			mocks:     mocks{mockedDroneRepository: mock.NewMockedDroneRepository(db), mockedMedicationRepository: mock.NewMockedMedicationRepository()},
 		},
 		{
 			name: "[Test] create drone without drone_model should return Error",
@@ -75,7 +78,7 @@ func TestCreateDrone(t *testing.T) {
 				  }`),
 			},
 			wantedErr: "[Error]: drone_model is required",
-			mocks:     mocks{mockedDroneRepository: mock.NewMockedDroneRepository()},
+			mocks:     mocks{mockedDroneRepository: mock.NewMockedDroneRepository(db), mockedMedicationRepository: mock.NewMockedMedicationRepository()},
 		},
 		{
 			name: "[Test] create drone without serial_number should return Error",
@@ -89,7 +92,7 @@ func TestCreateDrone(t *testing.T) {
 				  }`),
 			},
 			wantedErr: "[Error]: serial_number is required",
-			mocks:     mocks{mockedDroneRepository: mock.NewMockedDroneRepository()},
+			mocks:     mocks{mockedDroneRepository: mock.NewMockedDroneRepository(db), mockedMedicationRepository: mock.NewMockedMedicationRepository()},
 		},
 		{
 			name: "[Test] create drone with wrong input type serial_number should return Error",
@@ -104,7 +107,7 @@ func TestCreateDrone(t *testing.T) {
 				  }`),
 			},
 			wantedErr: "[Error]: serial_number accepts only numbers",
-			mocks:     mocks{mockedDroneRepository: mock.NewMockedDroneRepository()},
+			mocks:     mocks{mockedDroneRepository: mock.NewMockedDroneRepository(db), mockedMedicationRepository: mock.NewMockedMedicationRepository()},
 		},
 		{
 			name: "[Test] create drone with wrong weight_limit should return Error",
@@ -119,7 +122,7 @@ func TestCreateDrone(t *testing.T) {
 				  }`),
 			},
 			wantedErr: "[Error]: weight_limit: 1000 does not validate as range(0|500)",
-			mocks:     mocks{mockedDroneRepository: mock.NewMockedDroneRepository()},
+			mocks:     mocks{mockedDroneRepository: mock.NewMockedDroneRepository(db), mockedMedicationRepository: mock.NewMockedMedicationRepository()},
 		},
 		{
 			name: "[Test] create drone without weight_limit should return Error",
@@ -133,7 +136,7 @@ func TestCreateDrone(t *testing.T) {
 				  }`),
 			},
 			wantedErr: "[Error]: weight_limit is required",
-			mocks:     mocks{mockedDroneRepository: mock.NewMockedDroneRepository()},
+			mocks:     mocks{mockedDroneRepository: mock.NewMockedDroneRepository(db), mockedMedicationRepository: mock.NewMockedMedicationRepository()},
 		},
 		{
 			name: "[Test] create drone with wrong battery_capacity should return Error",
@@ -148,7 +151,7 @@ func TestCreateDrone(t *testing.T) {
 				  }`),
 			},
 			wantedErr: "[Error]: battery_capacity: 1000 does not validate as range(0|100)",
-			mocks:     mocks{mockedDroneRepository: mock.NewMockedDroneRepository()},
+			mocks:     mocks{mockedDroneRepository: mock.NewMockedDroneRepository(db), mockedMedicationRepository: mock.NewMockedMedicationRepository()},
 		},
 		{
 			name: "[Test] create drone without battery_capacity should return Error",
@@ -162,7 +165,7 @@ func TestCreateDrone(t *testing.T) {
 				  }`),
 			},
 			wantedErr: "[Error]: battery_capacity is required",
-			mocks:     mocks{mockedDroneRepository: mock.NewMockedDroneRepository()},
+			mocks:     mocks{mockedDroneRepository: mock.NewMockedDroneRepository(db), mockedMedicationRepository: mock.NewMockedMedicationRepository()},
 		},
 		{
 			name: "[Test] create drone with wrong state should return Error",
@@ -177,7 +180,7 @@ func TestCreateDrone(t *testing.T) {
 				  }`),
 			},
 			wantedErr: "[Error]: state: ID does not validate as state",
-			mocks:     mocks{mockedDroneRepository: mock.NewMockedDroneRepository()},
+			mocks:     mocks{mockedDroneRepository: mock.NewMockedDroneRepository(db), mockedMedicationRepository: mock.NewMockedMedicationRepository()},
 		},
 
 		{
@@ -192,15 +195,16 @@ func TestCreateDrone(t *testing.T) {
 				  }`),
 			},
 			wantedErr: "[Error]: state is required",
-			mocks:     mocks{mockedDroneRepository: mock.NewMockedDroneRepository()},
+			mocks:     mocks{mockedDroneRepository: mock.NewMockedDroneRepository(db), mockedMedicationRepository: mock.NewMockedMedicationRepository()},
 		},
 	}
 
 	for _, test := range tests {
 		t.Run(
 			test.name, func(t *testing.T) {
-				droneUseCase := NewDroneUseCase(test.mocks.mockedDroneRepository)
+				droneUseCase := NewDroneUseCase(test.mocks.mockedDroneRepository, test.mocks.mockedMedicationRepository)
 				got, err := droneUseCase.Create(test.args.ctx, test.args.request)
+				fmt.Println("gottttttttt:")
 				if err != nil {
 					assert.EqualError(t, err, test.wantedErr)
 					return

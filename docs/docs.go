@@ -15,7 +15,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/drone": {
+        "/drone/": {
             "post": {
                 "description": "Create a new drone entity",
                 "consumes": [

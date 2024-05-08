@@ -59,7 +59,7 @@ definitions:
 info:
   contact: {}
 paths:
-  /drone:
+  /drone/:
     post:
       consumes:
       - application/json

@@ -13,14 +13,24 @@ To get started with this project, follow these steps:
 
 ### Features
 
-- user could register new drone
+- could register new drone
+    - Serial Number: Accepts only integers.
+    - Weight Limit: Accepts only float values between 0 and 500.
+    - Battery Capacity: Accepts only integers between 0 and 100.
+    - State should be IDLE or LOADING or DELIVERED or RETURNING
+    - Drone Model should be Light or Middle or Cruiser or Heavy
 
-### Data Validations
-- Serial Number: Accepts only integers.
-- Weight Limit: Accepts only float values between 0 and 500.
-- Battery Capacity: Accepts only integers between 0 and 100.
-- State should be IDLE or LOADING or DELIVERED or RETURNING
-- Drone Model should be Light or Middle or Cruiser or Heavy
+- could loading medications to specific drone
+    - drone id: must exist in created drones
+    - medications : list of medications
+    Medicationd fields validation:
+    Name: accept characters , numbers , _ and -
+    Code: accept upper case characters only, numbers, _ and -
+    Weight: accept float 
+
+- could get loaded medications for specific drone
+ 
+
 
 ### Installation
 

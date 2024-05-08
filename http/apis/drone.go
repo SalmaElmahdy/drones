@@ -32,7 +32,7 @@ func NewDroneAPIs(droneUseCase usecase.IDroneUseCase) DroneAPIs {
 // @Success		200		{object}	entity.DroneRequest
 // @Failure		400		{string}	string	"Bad Request"
 // @Failure		500		{string}	string	"Internal Server Error"
-// @Router			/drone [post]
+// @Router			/drone/ [post]
 func (api DroneAPIs) Create(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	requestByte, err := ioutil.ReadAll(r.Body)
