@@ -96,7 +96,13 @@ func (d DroneUseCase) LoadMedications(ctx context.Context, request []byte) ([]by
 		}
 
 		if err == gorm.ErrRecordNotFound {
-			medication, err = d.medicationRepository.Create(ctx, reqMedication)
+			reqMedicationObj := entity.Medication{
+				Name:   reqMedication.Name,
+				Weight: reqMedication.Weight,
+				Code:   reqMedication.Code,
+				Image:  reqMedication.Image,
+			}
+			medication, err = d.medicationRepository.Create(ctx, reqMedicationObj)
 			if err != nil {
 				fmt.Printf("[Error]: %v", err.Error())
 				return []byte{}, err

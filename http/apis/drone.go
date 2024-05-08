@@ -1,14 +1,3 @@
-//	@title			Drones API
-//	@version		1.16.3
-//	@description	This is a sample serice for managing Drones
-//	@termsOfService	http://swagger.io/terms/
-//	@contact.name	API Support
-//	@contact.email	soberkoder@swagger.io
-//	@license.name	Apache 2.0
-//	@license.url	http://www.apache.org/licenses/LICENSE-2.0.html
-//	@host			localhost:8010
-//	@BasePath		/
-
 package apis
 
 import (
@@ -65,6 +54,17 @@ func (api DroneAPIs) Create(w http.ResponseWriter, r *http.Request) {
 	w.Write(response)
 }
 
+// @Summary		Get Loaded Medications
+// @Description	checking loaded medication items for a given drone
+// @Tags			Drone
+// @Accept			json
+// @Produce		json
+// @Param			id	path		int	true	"Drone ID"
+// @Success		200	{object}	[]entity.MedicationRequest
+// @Failure		400	{string}	string	"Bad Request"
+// @Failure		500	{string}	string	"Internal Server Error"
+// @Failure		404	{string}	string	"Not Found"
+// @Router			/drone/{id}/medications [get]
 func (api DroneAPIs) GetLoadedMedications(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	vars := mux.Vars(r)
@@ -94,6 +94,16 @@ func (api DroneAPIs) GetLoadedMedications(w http.ResponseWriter, r *http.Request
 
 }
 
+// @Summary		Load Medications
+// @Description	Loading a drone with medication items
+// @Tags			Drone
+// @Accept			json
+// @Produce		json
+// @Param			request	body		entity.LoadMedicationsRequest	true	"Request of load medications"
+// @Success		200		{object}	entity.DroneRequest
+// @Failure		400		{string}	string	"Bad Request"
+// @Failure		500		{string}	string	"Internal Server Error"
+// @Router			/drone/load [post]
 func (api DroneAPIs) LoadMedications(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	requestByte, err := ioutil.ReadAll(r.Body)

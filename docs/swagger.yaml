@@ -1,4 +1,3 @@
-basePath: /
 definitions:
   entity.DroneModelEnum:
     enum:
@@ -37,18 +36,28 @@ definitions:
     - LOADING
     - DELIVERED
     - RETURNING
-host: localhost:8010
+  entity.LoadMedicationsRequest:
+    properties:
+      drone_id:
+        type: integer
+      medications:
+        items:
+          $ref: '#/definitions/entity.MedicationRequest'
+        type: array
+    type: object
+  entity.MedicationRequest:
+    properties:
+      code:
+        type: string
+      image:
+        type: string
+      name:
+        type: string
+      weight:
+        type: number
+    type: object
 info:
-  contact:
-    email: soberkoder@swagger.io
-    name: API Support
-  description: This is a sample serice for managing Drones
-  license:
-    name: Apache 2.0
-    url: http://www.apache.org/licenses/LICENSE-2.0.html
-  termsOfService: http://swagger.io/terms/
-  title: Drones API
-  version: 1.16.3
+  contact: {}
 paths:
   /drone:
     post:
@@ -78,6 +87,71 @@ paths:
           schema:
             type: string
       summary: Create a new drone
+      tags:
+      - Drone
+  /drone/{id}/medications:
+    get:
+      consumes:
+      - application/json
+      description: checking loaded medication items for a given drone
+      parameters:
+      - description: Drone ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/entity.MedicationRequest'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Get Loaded Medications
+      tags:
+      - Drone
+  /drone/load:
+    post:
+      consumes:
+      - application/json
+      description: Loading a drone with medication items
+      parameters:
+      - description: Request of load medications
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/entity.LoadMedicationsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.DroneRequest'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Load Medications
       tags:
       - Drone
 swagger: "2.0"
