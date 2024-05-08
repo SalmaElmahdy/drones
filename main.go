@@ -49,8 +49,10 @@ func main() {
 
 func seed(db *gorm.DB) {
 	droneSeeder := seeds.NewDroneSeeder(gorm_seeder.SeederConfiguration{Rows: 5})
+	medicationSeeder := seeds.NewMedicationSeeder(gorm_seeder.SeederConfiguration{Rows: 5})
 	seedersStack := gorm_seeder.NewSeedersStack(db)
 	seedersStack.AddSeeder(&droneSeeder)
+	seedersStack.AddSeeder(&medicationSeeder)
 	if err := seedersStack.Seed(); err != nil {
 		log.Fatalf("Error seeding database: %v", err)
 	}
