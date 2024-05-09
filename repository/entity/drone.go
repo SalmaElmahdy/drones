@@ -25,10 +25,12 @@ const (
 type DroneStateEnum string
 
 const (
-	IDLE      DroneStateEnum = "IDLE"
-	LOADING   DroneStateEnum = "LOADING"
-	DELIVERED DroneStateEnum = "DELIVERED"
-	RETURNING DroneStateEnum = "RETURNING"
+	IDLE       DroneStateEnum = "IDLE"
+	LOADING    DroneStateEnum = "LOADING"
+	LOADED     DroneStateEnum = "LOADED"
+	DELIVERING DroneStateEnum = "DELIVERING"
+	DELIVERED  DroneStateEnum = "DELIVERED"
+	RETURNING  DroneStateEnum = "RETURNING"
 )
 
 type DroneRequest struct {
