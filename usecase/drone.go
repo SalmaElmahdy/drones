@@ -14,7 +14,7 @@ import (
 
 type IDroneUseCase interface {
 	Create(ctx context.Context, request []byte) ([]byte, error)
-	GetLoadedMedications(ctx context.Context, id uint) ([]byte, error)
+	GetLoadedMedications(ctx context.Context, serialNumber string) ([]byte, error)
 	LoadMedications(ctx context.Context, request []byte) ([]byte, error)
 }
 
@@ -29,6 +29,7 @@ func NewDroneUseCase(droneRepository repository.IDroneRepository, medicationRepo
 		medicationRepository: medicationRepository,
 	}
 }
+
 func (d DroneUseCase) Create(ctx context.Context, request []byte) ([]byte, error) {
 	droneRequest := entity.DroneRequest{}
 	err := json.Unmarshal(request, &droneRequest)
@@ -59,8 +60,8 @@ func (d DroneUseCase) Create(ctx context.Context, request []byte) ([]byte, error
 	return json.Marshal(createdDrone)
 }
 
-func (d DroneUseCase) GetLoadedMedications(ctx context.Context, id uint) ([]byte, error) {
-	loadedMedications, err := d.droneRepository.GetLoadedMedications(ctx, id)
+func (d DroneUseCase) GetLoadedMedications(ctx context.Context, serialNumber string) ([]byte, error) {
+	loadedMedications, err := d.droneRepository.GetLoadedMedications(ctx, serialNumber)
 	if err != nil {
 		fmt.Printf("[Error]: %v", err.Error())
 		return []byte{}, err
@@ -77,7 +78,7 @@ func (d DroneUseCase) LoadMedications(ctx context.Context, request []byte) ([]by
 		return []byte{}, err
 	}
 
-	drone, err := d.droneRepository.FindByID(ctx, loadMedicationRequest.DroneID)
+	drone, err := d.droneRepository.FindBySerialNumber(ctx, loadMedicationRequest.SerialNumber)
 	if err != nil {
 		fmt.Printf("[Error]: %v", err.Error())
 		return []byte{}, err
@@ -88,7 +89,7 @@ func (d DroneUseCase) LoadMedications(ctx context.Context, request []byte) ([]by
 		return []byte{}, err
 	}
 
-	existingMedications, err := d.droneRepository.GetLoadedMedications(ctx, loadMedicationRequest.DroneID)
+	existingMedications, err := d.droneRepository.GetLoadedMedications(ctx, loadMedicationRequest.SerialNumber)
 	if err != nil {
 		fmt.Printf("[Error]: %v", err.Error())
 		return []byte{}, err
@@ -120,25 +121,16 @@ func (d DroneUseCase) LoadMedications(ctx context.Context, request []byte) ([]by
 			}
 		}
 
-		alreadyLoaded := false
-		for _, loadedMedication := range existingMedications {
-			if loadedMedication.Code == reqMedication.Code {
-				alreadyLoaded = true
-				break
-			}
+		currentMedicationWeight += medication.Weight
+		if currentMedicationWeight <= drone.WeightLimit {
+			drone.Medications = append(drone.Medications, medication)
+			drone.State = entity.LOADING
+		} else {
+			err := errors.New("medications exceed drone's weight limit")
+			fmt.Printf("[Error]: %v", err.Error())
+			return []byte{}, err
 		}
 
-		if !alreadyLoaded {
-			currentMedicationWeight += medication.Weight
-			if currentMedicationWeight <= drone.WeightLimit {
-				drone.Medications = append(drone.Medications, medication)
-				drone.State = entity.LOADING
-			} else {
-				err := errors.New("medications exceed drone's weight limit")
-				fmt.Printf("[Error]: %v", err.Error())
-				return []byte{}, err
-			}
-		}
 	}
 
 	updatedDrone, err := d.droneRepository.Update(ctx, drone)
