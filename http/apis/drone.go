@@ -118,3 +118,25 @@ func (api DroneAPIs) LoadMedications(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write(response)
 }
+
+// @Summary		Get Drones
+// @Description	Get all registered drones
+// @Tags			Drone
+// @Accept			json
+// @Produce		json
+// @Success		200	{object}	[]entity.DroneRequest
+// @Failure		400	{string}	string	"Bad Request"
+// @Failure		500	{string}	string	"Internal Server Error"
+// @Router			/drone/ [get]
+func (api DroneAPIs) GetAll(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	response, err := api.droneUseCase.GetAll(ctx)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(fmt.Sprintf(`{ "error" : "%s"}`, err.Error())))
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write(response)
+}

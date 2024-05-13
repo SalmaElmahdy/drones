@@ -8,6 +8,7 @@ import (
 )
 
 type IDroneRepository interface {
+	GetAll(ctx context.Context) ([]entity.Drone, error)
 	Create(ctx context.Context, drone entity.Drone) (entity.Drone, error)
 	Update(ctx context.Context, drone entity.Drone) (entity.Drone, error)
 	FindBySerialNumber(ctx context.Context, serialNumber string) (entity.Drone, error)
@@ -22,6 +23,12 @@ func NewDroneRepository(client *gorm.DB) IDroneRepository {
 	return &DroneRepository{
 		client: client,
 	}
+}
+
+func (dDB *DroneRepository) GetAll(ctx context.Context) ([]entity.Drone, error) {
+	var drones []entity.Drone
+	err := dDB.client.WithContext(ctx).Find(&drones).Error
+	return drones, err
 }
 
 func (dDB *DroneRepository) Create(ctx context.Context, drone entity.Drone) (entity.Drone, error) {

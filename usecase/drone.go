@@ -13,6 +13,7 @@ import (
 
 type IDroneUseCase interface {
 	Create(ctx context.Context, request []byte) ([]byte, error)
+	GetAll(ctx context.Context) ([]byte, error)
 	GetLoadedMedications(ctx context.Context, serialNumber string) ([]byte, error)
 	LoadMedications(ctx context.Context, request []byte) ([]byte, error)
 }
@@ -27,6 +28,15 @@ func NewDroneUseCase(droneRepository repository.IDroneRepository, medicationRepo
 		droneRepository:      droneRepository,
 		medicationRepository: medicationRepository,
 	}
+}
+
+func (d DroneUseCase) GetAll(ctx context.Context) ([]byte, error) {
+	drones, err := d.droneRepository.GetAll(ctx)
+	if err != nil {
+		fmt.Printf("[Error]: %v", err.Error())
+		return []byte{}, err
+	}
+	return json.Marshal(drones)
 }
 
 func (d DroneUseCase) Create(ctx context.Context, request []byte) ([]byte, error) {

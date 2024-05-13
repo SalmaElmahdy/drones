@@ -64,6 +64,30 @@ info:
   contact: {}
 paths:
   /drone/:
+    get:
+      consumes:
+      - application/json
+      description: Get all registered drones
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/entity.DroneRequest'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Get Drones
+      tags:
+      - Drone
     post:
       consumes:
       - application/json
