@@ -9,8 +9,8 @@ import (
 
 type IDroneRepository interface {
 	Create(ctx context.Context, drone entity.Drone) (entity.Drone, error)
-	FindBySerialNumber(ctx context.Context, serialNumber string) (entity.Drone, error)
 	Update(ctx context.Context, drone entity.Drone) (entity.Drone, error)
+	FindBySerialNumber(ctx context.Context, serialNumber string) (entity.Drone, error)
 	GetLoadedMedications(ctx context.Context, serialNumber string) ([]entity.Medication, error)
 }
 

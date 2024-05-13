@@ -43,7 +43,7 @@ func (m MedicationUseCase) Create(ctx context.Context, request []byte) ([]byte, 
 		Image:  medicationRequest.Image,
 	}
 
-	createdMedication, err := m.medicationRepository.Create(ctx, medication)
+	createdMedication, err := m.medicationRepository.FirstOrCreate(ctx, medication)
 	if err != nil {
 		fmt.Printf("[Error]: %v", err.Error())
 		return []byte{}, err

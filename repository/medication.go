@@ -8,7 +8,7 @@ import (
 )
 
 type IMedicationRepository interface {
-	Create(ctx context.Context, medication entity.Medication) (entity.Medication, error)
+	FirstOrCreate(ctx context.Context, medication entity.Medication) (entity.Medication, error)
 	GetByCode(ctx context.Context, code string) (entity.Medication, error)
 }
 type MedicationRepository struct {
@@ -21,8 +21,8 @@ func NewMedicationRepository(client *gorm.DB) IMedicationRepository {
 	}
 }
 
-func (mDB *MedicationRepository) Create(ctx context.Context, medication entity.Medication) (entity.Medication, error) {
-	err := mDB.client.WithContext(ctx).Create(&medication).Error
+func (mDB *MedicationRepository) FirstOrCreate(ctx context.Context, medication entity.Medication) (entity.Medication, error) {
+	err := mDB.client.WithContext(ctx).Where("code = ?", medication.Code).FirstOrCreate(&medication).Error
 	return medication, err
 }
 

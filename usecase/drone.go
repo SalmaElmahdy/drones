@@ -9,7 +9,6 @@ import (
 	"github.com/SalmaElmahdy/drones/repository"
 	"github.com/SalmaElmahdy/drones/repository/entity"
 	"github.com/SalmaElmahdy/drones/validators"
-	"gorm.io/gorm"
 )
 
 type IDroneUseCase interface {
@@ -83,48 +82,48 @@ func (d DroneUseCase) LoadMedications(ctx context.Context, request []byte) ([]by
 		fmt.Printf("[Error]: %v", err.Error())
 		return []byte{}, err
 	}
-	if drone.State != entity.LOADING && drone.State != entity.IDLE {
-		err := errors.New("Invalid drone state")
+
+	if drone.State != entity.IDLE {
+		err := errors.New("invalid drone state")
 		fmt.Printf("[Error]: %v", err.Error())
 		return []byte{}, err
 	}
 
-	existingMedications, err := d.droneRepository.GetLoadedMedications(ctx, loadMedicationRequest.SerialNumber)
+	drone.State = entity.LOADING
+	drone, err = d.droneRepository.Update(ctx, drone)
 	if err != nil {
 		fmt.Printf("[Error]: %v", err.Error())
 		return []byte{}, err
 	}
 
 	currentMedicationWeight := 0.0
-	for _, loadedMedication := range existingMedications {
-		currentMedicationWeight += loadedMedication.Weight
-	}
-
 	for _, reqMedication := range loadMedicationRequest.Medications {
-		medication, err := d.medicationRepository.GetByCode(ctx, reqMedication.Code)
-		if err != nil && err != gorm.ErrRecordNotFound {
+
+		reqMedicationObj := entity.Medication{
+			Name:   reqMedication.Name,
+			Weight: reqMedication.Weight,
+			Code:   reqMedication.Code,
+			Image:  reqMedication.Image,
+		}
+
+		medication, err := d.medicationRepository.FirstOrCreate(ctx, reqMedicationObj)
+		if err != nil {
 			fmt.Printf("[Error]: %v", err.Error())
 			return []byte{}, err
 		}
 
-		if err == gorm.ErrRecordNotFound {
-			reqMedicationObj := entity.Medication{
-				Name:   reqMedication.Name,
-				Weight: reqMedication.Weight,
-				Code:   reqMedication.Code,
-				Image:  reqMedication.Image,
-			}
-			medication, err = d.medicationRepository.Create(ctx, reqMedicationObj)
-			if err != nil {
-				fmt.Printf("[Error]: %v", err.Error())
-				return []byte{}, err
-			}
-		}
-
 		currentMedicationWeight += medication.Weight
 		if currentMedicationWeight <= drone.WeightLimit {
-			drone.Medications = append(drone.Medications, medication)
-			drone.State = entity.LOADING
+			// droneMedication := entity.DroneMedications{
+			// 	DroneID:      drone.ID,
+			// 	MedicationID: medication.ID,
+			// 	OrderNumber:  1,
+			// }
+			// err := d.droneRepository.AppendMedication(ctx, droneMedication)
+			// if err != nil {
+			// 	fmt.Printf("[Error]: %v", err.Error())
+			// 	return []byte{}, err
+			// }
 		} else {
 			err := errors.New("medications exceed drone's weight limit")
 			fmt.Printf("[Error]: %v", err.Error())
@@ -133,10 +132,18 @@ func (d DroneUseCase) LoadMedications(ctx context.Context, request []byte) ([]by
 
 	}
 
-	updatedDrone, err := d.droneRepository.Update(ctx, drone)
+	drone.State = entity.LOADED
+	drone, err = d.droneRepository.Update(ctx, drone)
 	if err != nil {
 		fmt.Printf("[Error]: %v", err.Error())
 		return []byte{}, err
 	}
-	return json.Marshal(updatedDrone)
+
+	drone.State = entity.DELIVERED
+	drone, err = d.droneRepository.Update(ctx, drone)
+	if err != nil {
+		fmt.Printf("[Error]: %v", err.Error())
+		return []byte{}, err
+	}
+	return json.Marshal(drone)
 }

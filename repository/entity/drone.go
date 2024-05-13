@@ -42,6 +42,6 @@ type DroneRequest struct {
 }
 
 type LoadMedicationsRequest struct {
-	SerialNumber string              `json:"serial_number"`
-	Medications  []MedicationRequest `json:"medications"`
+	SerialNumber string              `json:"serial_number" valid:"required~serial_number is required"`
+	Medications  []MedicationRequest `json:"medications" valid:"required~medications are required"`
 }
