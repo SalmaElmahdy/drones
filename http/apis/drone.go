@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"strconv"
 
 	_ "github.com/SalmaElmahdy/drones/docs"
 	"github.com/SalmaElmahdy/drones/usecase"
@@ -59,30 +58,25 @@ func (api DroneAPIs) Create(w http.ResponseWriter, r *http.Request) {
 // @Tags			Drone
 // @Accept			json
 // @Produce		json
-// @Param			id	path		int	true	"Drone ID"
-// @Success		200	{object}	[]entity.MedicationRequest
-// @Failure		400	{string}	string	"Bad Request"
-// @Failure		500	{string}	string	"Internal Server Error"
-// @Failure		404	{string}	string	"Not Found"
-// @Router			/drone/{id}/medications [get]
+// @Param			serial_number	path		string	true	"Serial Number"
+// @Success		200				{object}	[]entity.MedicationRequest
+// @Failure		400				{string}	string	"Bad Request"
+// @Failure		500				{string}	string	"Internal Server Error"
+// @Failure		404				{string}	string	"Not Found"
+// @Router			/drone/{serial_number}/medications [get]
 func (api DroneAPIs) GetLoadedMedications(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	vars := mux.Vars(r)
-	id, ok := vars["id"]
+	fmt.Println(vars)
+	serialNumber, ok := vars["id"]
 	if !ok {
-		err := errors.New("ID is required")
+		err := errors.New("Serial Number is required")
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte(fmt.Sprintf(`{ "error" : %q}`, err.Error())))
 		return
 	}
-	ID, err := strconv.Atoi(id)
-	if err != nil {
-		err := errors.New("invalid ID")
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(fmt.Sprintf(`{ "error" : %q}`, err.Error())))
-		return
-	}
-	response, err := api.droneUseCase.GetLoadedMedications(ctx, uint(ID))
+
+	response, err := api.droneUseCase.GetLoadedMedications(ctx, serialNumber)
 	if err != nil {
 		log.Printf("[Error]: %v", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)

@@ -42,6 +42,6 @@ type DroneRequest struct {
 }
 
 type LoadMedicationsRequest struct {
-	DroneID     uint                `json:"drone_id"`
-	Medications []MedicationRequest `json:"medications"`
+	SerialNumber string              `json:"serial_number"`
+	Medications  []MedicationRequest `json:"medications"`
 }

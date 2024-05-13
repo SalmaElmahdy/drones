@@ -28,22 +28,26 @@ definitions:
     enum:
     - IDLE
     - LOADING
+    - LOADED
+    - DELIVERING
     - DELIVERED
     - RETURNING
     type: string
     x-enum-varnames:
     - IDLE
     - LOADING
+    - LOADED
+    - DELIVERING
     - DELIVERED
     - RETURNING
   entity.LoadMedicationsRequest:
     properties:
-      drone_id:
-        type: integer
       medications:
         items:
           $ref: '#/definitions/entity.MedicationRequest'
         type: array
+      serial_number:
+        type: string
     type: object
   entity.MedicationRequest:
     properties:
@@ -89,17 +93,17 @@ paths:
       summary: Create a new drone
       tags:
       - Drone
-  /drone/{id}/medications:
+  /drone/{serial_number}/medications:
     get:
       consumes:
       - application/json
       description: checking loaded medication items for a given drone
       parameters:
-      - description: Drone ID
+      - description: Serial Number
         in: path
-        name: id
+        name: serial_number
         required: true
-        type: integer
+        type: string
       produces:
       - application/json
       responses:

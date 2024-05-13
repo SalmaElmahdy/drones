@@ -107,7 +107,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/drone/{id}/medications": {
+        "/drone/{serial_number}/medications": {
             "get": {
                 "description": "checking loaded medication items for a given drone",
                 "consumes": [
@@ -122,9 +122,9 @@ const docTemplate = `{
                 "summary": "Get Loaded Medications",
                 "parameters": [
                     {
-                        "type": "integer",
-                        "description": "Drone ID",
-                        "name": "id",
+                        "type": "string",
+                        "description": "Serial Number",
+                        "name": "serial_number",
                         "in": "path",
                         "required": true
                     }
@@ -202,12 +202,16 @@ const docTemplate = `{
             "enum": [
                 "IDLE",
                 "LOADING",
+                "LOADED",
+                "DELIVERING",
                 "DELIVERED",
                 "RETURNING"
             ],
             "x-enum-varnames": [
                 "IDLE",
                 "LOADING",
+                "LOADED",
+                "DELIVERING",
                 "DELIVERED",
                 "RETURNING"
             ]
@@ -215,14 +219,14 @@ const docTemplate = `{
         "entity.LoadMedicationsRequest": {
             "type": "object",
             "properties": {
-                "drone_id": {
-                    "type": "integer"
-                },
                 "medications": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/entity.MedicationRequest"
                     }
+                },
+                "serial_number": {
+                    "type": "string"
                 }
             }
         },

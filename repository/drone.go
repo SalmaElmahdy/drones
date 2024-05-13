@@ -9,9 +9,9 @@ import (
 
 type IDroneRepository interface {
 	Create(ctx context.Context, drone entity.Drone) (entity.Drone, error)
-	FindByID(ctx context.Context, id uint) (entity.Drone, error)
+	FindBySerialNumber(ctx context.Context, serialNumber string) (entity.Drone, error)
 	Update(ctx context.Context, drone entity.Drone) (entity.Drone, error)
-	GetLoadedMedications(ctx context.Context, id uint) ([]entity.Medication, error)
+	GetLoadedMedications(ctx context.Context, serialNumber string) ([]entity.Medication, error)
 }
 
 type DroneRepository struct {
@@ -29,9 +29,9 @@ func (dDB *DroneRepository) Create(ctx context.Context, drone entity.Drone) (ent
 	return drone, err
 }
 
-func (dDB *DroneRepository) FindByID(ctx context.Context, id uint) (entity.Drone, error) {
+func (dDB *DroneRepository) FindBySerialNumber(ctx context.Context, serialNumber string) (entity.Drone, error) {
 	var drone entity.Drone
-	result := dDB.client.First(&drone, id)
+	result := dDB.client.Where("serial_number = ?", serialNumber).First(&drone)
 	if result.Error != nil {
 		return entity.Drone{}, result.Error
 	}
@@ -51,9 +51,9 @@ func (dDB *DroneRepository) Update(ctx context.Context, drone entity.Drone) (ent
 	return drone, nil
 }
 
-func (dDB *DroneRepository) GetLoadedMedications(ctx context.Context, id uint) ([]entity.Medication, error) {
+func (dDB *DroneRepository) GetLoadedMedications(ctx context.Context, serialNumber string) ([]entity.Medication, error) {
 	var drone entity.Drone
-	if err := dDB.client.Preload("Medications").First(&drone, id).Error; err != nil {
+	if err := dDB.client.Preload("Medications").Where("serial_number = ?", serialNumber).First(&drone).Error; err != nil {
 		return []entity.Medication{}, err
 	}
 	return drone.Medications, nil
