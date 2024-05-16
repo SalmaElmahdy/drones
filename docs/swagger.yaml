@@ -60,6 +60,13 @@ definitions:
       weight:
         type: number
     type: object
+  entity.UpdateDroneStateRequest:
+    properties:
+      serial_number:
+        type: string
+      state:
+        $ref: '#/definitions/entity.DroneStateEnum'
+    type: object
 info:
   contact: {}
 paths:
@@ -180,6 +187,36 @@ paths:
           schema:
             type: string
       summary: Load Medications
+      tags:
+      - Drone
+  /drone/state:
+    patch:
+      consumes:
+      - application/json
+      description: change drone state
+      parameters:
+      - description: Request of load medications
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/entity.UpdateDroneStateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.DroneRequest'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Update Drone State
       tags:
       - Drone
 swagger: "2.0"

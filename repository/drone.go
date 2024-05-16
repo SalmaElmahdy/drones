@@ -51,10 +51,6 @@ func (dDB *DroneRepository) Update(ctx context.Context, drone entity.Drone) (ent
 	if result.Error != nil {
 		return entity.Drone{}, result.Error
 	}
-
-	if err := dDB.client.Preload("Medications").First(&drone, drone.ID).Error; err != nil {
-		return entity.Drone{}, err
-	}
 	return drone, nil
 }
 

@@ -14,6 +14,7 @@ import (
 type IDroneUseCase interface {
 	Create(ctx context.Context, request []byte) ([]byte, error)
 	GetAll(ctx context.Context) ([]byte, error)
+	UpdateDroneState(ctx context.Context, request []byte) ([]byte, error)
 	GetLoadedMedications(ctx context.Context, serialNumber string) ([]byte, error)
 	LoadMedications(ctx context.Context, request []byte) ([]byte, error)
 }
@@ -156,4 +157,68 @@ func (d DroneUseCase) LoadMedications(ctx context.Context, request []byte) ([]by
 		return []byte{}, err
 	}
 	return json.Marshal(drone)
+}
+
+func (d DroneUseCase) UpdateDroneState(ctx context.Context, request []byte) ([]byte, error) {
+	updateDroneStateRequest := entity.UpdateDroneStateRequest{}
+	err := json.Unmarshal(request, &updateDroneStateRequest)
+	if err != nil {
+		fmt.Printf("[Error]: %v", err.Error())
+		return []byte{}, err
+	}
+
+	err = validators.ValidateUpdateDroneStateRequest(updateDroneStateRequest)
+	if err != nil {
+		fmt.Printf("[Error]: %v", err.Error())
+		return []byte{}, err
+	}
+	existDrone, err := d.droneRepository.FindBySerialNumber(ctx, updateDroneStateRequest.SerialNumber)
+	if err != nil {
+		fmt.Printf("[Error]: %v", err.Error())
+		return []byte{}, err
+	}
+
+	err = ValidateDroneStateTransition(existDrone.State, updateDroneStateRequest.State)
+	if err != nil {
+		fmt.Printf("[Error]: %v", err.Error())
+		return []byte{}, err
+	}
+
+	existDrone.State = updateDroneStateRequest.State
+
+	existDrone, err = d.droneRepository.Update(ctx, existDrone)
+	if err != nil {
+		fmt.Printf("[Error]: %v", err.Error())
+		return []byte{}, err
+	}
+	return json.Marshal(existDrone)
+}
+
+func ValidateDroneStateTransition(currentState, newState entity.DroneStateEnum) error {
+	const validationMessage = "[Error]: invalid state transition: current state must be %v, got %v"
+	switch newState {
+	case entity.IDLE:
+		if currentState != entity.RETURNING {
+			return fmt.Errorf(validationMessage, entity.RETURNING, currentState)
+		}
+	case entity.LOADING:
+		if currentState != entity.IDLE {
+			return fmt.Errorf(validationMessage, entity.IDLE, currentState)
+		}
+	case entity.LOADED:
+		if currentState != entity.LOADING {
+			return fmt.Errorf(validationMessage, entity.LOADING, currentState)
+		}
+	case entity.DELIVERED:
+		if currentState != entity.LOADED {
+			return fmt.Errorf(validationMessage, entity.LOADING, currentState)
+		}
+	case entity.RETURNING:
+		if currentState != entity.DELIVERED {
+			return fmt.Errorf(validationMessage, entity.DELIVERED, currentState)
+		}
+	default:
+		return fmt.Errorf("[Error]: invalid new state: %v", newState)
+	}
+	return nil
 }

@@ -143,6 +143,52 @@ const docTemplate = `{
                 }
             }
         },
+        "/drone/state": {
+            "patch": {
+                "description": "change drone state",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Drone"
+                ],
+                "summary": "Update Drone State",
+                "parameters": [
+                    {
+                        "description": "Request of load medications",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/entity.UpdateDroneStateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/entity.DroneRequest"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/drone/{serial_number}/medications": {
             "get": {
                 "description": "checking loaded medication items for a given drone",
@@ -280,6 +326,17 @@ const docTemplate = `{
                 },
                 "weight": {
                     "type": "number"
+                }
+            }
+        },
+        "entity.UpdateDroneStateRequest": {
+            "type": "object",
+            "properties": {
+                "serial_number": {
+                    "type": "string"
+                },
+                "state": {
+                    "$ref": "#/definitions/entity.DroneStateEnum"
                 }
             }
         }
