@@ -204,7 +204,115 @@ func TestCreateDrone(t *testing.T) {
 			test.name, func(t *testing.T) {
 				droneUseCase := NewDroneUseCase(test.mocks.mockedDroneRepository, test.mocks.mockedMedicationRepository)
 				got, err := droneUseCase.Create(test.args.ctx, test.args.request)
-				fmt.Println("gottttttttt:")
+				if err != nil {
+					assert.EqualError(t, err, test.wantedErr)
+					return
+				}
+				droneRes := entity.Drone{}
+				err = json.Unmarshal(got, &droneRes)
+				if err != nil {
+					fmt.Printf("[Error]: %v", err.Error())
+					return
+				}
+				assert.Equal(t, test.want.SerialNumber, droneRes.SerialNumber)
+				assert.Equal(t, test.want.DroneModel, droneRes.DroneModel)
+				assert.Equal(t, test.want.WeightLimit, droneRes.WeightLimit)
+				assert.Equal(t, test.want.BatteryCapacity, droneRes.BatteryCapacity)
+				assert.Equal(t, test.want.State, droneRes.State)
+			})
+	}
+}
+
+func TestUpdateDroneState(t *testing.T) {
+	db, err := repository.SetupTestDatabase()
+	assert.NoError(t, err, "Error setting up test database")
+
+	// create needed data
+	drones := []entity.Drone{
+		{SerialNumber: "1001", DroneModel: entity.Light, WeightLimit: 11, BatteryCapacity: 50, State: entity.IDLE},
+		{SerialNumber: "1002", DroneModel: entity.Light, WeightLimit: 11, BatteryCapacity: 50, State: entity.IDLE},
+	}
+	err = db.Create(&drones).Error
+	if err != nil {
+		t.Errorf("[Error] Cannot create Drones: %v", err)
+	}
+	type mocks struct {
+		mockedDroneRepository      repository.IDroneRepository
+		mockedMedicationRepository repository.IMedicationRepository
+	}
+	type args struct {
+		ctx     context.Context
+		request []byte
+	}
+	tests := []struct {
+		name      string
+		args      args
+		want      entity.Drone
+		wantedErr string
+		mocks     mocks
+	}{
+		{
+			name: "[Test] update drone state method should return updated Drone",
+			args: args{
+				ctx: context.Background(),
+				request: []byte(`{
+					"serial_number":"1001",
+					"state":"LOADING"
+				  }`),
+			},
+			want: entity.Drone{
+				SerialNumber:    "1001",
+				DroneModel:      entity.Light,
+				WeightLimit:     11,
+				BatteryCapacity: 50,
+				State:           entity.LOADING},
+
+			mocks: mocks{mockedDroneRepository: mock.NewMockedDroneRepository(db), mockedMedicationRepository: mock.NewMockedMedicationRepository()},
+		},
+		{
+			name: "[Test] update drone state with undefined new state should fail",
+			args: args{
+				ctx: context.Background(),
+				request: []byte(`{
+					"serial_number":"1001",
+					"state":"TEST"
+				  }`),
+			},
+			wantedErr: "[Error]: state: TEST does not validate as state",
+
+			mocks: mocks{mockedDroneRepository: mock.NewMockedDroneRepository(db), mockedMedicationRepository: mock.NewMockedMedicationRepository()},
+		},
+		{
+			name: "[Test] update not found drone state should fail",
+			args: args{
+				ctx: context.Background(),
+				request: []byte(`{
+					"serial_number":"1",
+					"state":"LOADING"
+				  }`),
+			},
+			wantedErr: "record not found",
+			mocks:     mocks{mockedDroneRepository: mock.NewMockedDroneRepository(db), mockedMedicationRepository: mock.NewMockedMedicationRepository()},
+		},
+		{
+			name: "[Test] update drone state with wrong defined state should fail",
+			args: args{
+				ctx: context.Background(),
+				request: []byte(`{
+					"serial_number":"1002",
+					"state":"RETURNING"
+				  }`),
+			},
+			wantedErr: "[Error]: invalid state transition: current state must be DELIVERED, got IDLE",
+			mocks:     mocks{mockedDroneRepository: mock.NewMockedDroneRepository(db), mockedMedicationRepository: mock.NewMockedMedicationRepository()},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(
+			test.name, func(t *testing.T) {
+				droneUseCase := NewDroneUseCase(test.mocks.mockedDroneRepository, test.mocks.mockedMedicationRepository)
+				got, err := droneUseCase.UpdateDroneState(test.args.ctx, test.args.request)
 				if err != nil {
 					assert.EqualError(t, err, test.wantedErr)
 					return
