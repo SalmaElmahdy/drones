@@ -38,6 +38,10 @@ func StartServer(api APIs) {
 		api.DroneAPIs.GetAll(w, r)
 
 	}).Methods("GET")
+	droneSubRouter.HandleFunc("/state", func(w http.ResponseWriter, r *http.Request) {
+		api.DroneAPIs.UpdateDroneState(w, r)
+
+	}).Methods("PATCH")
 
 	droneSubRouter.HandleFunc("/{id}/medications", func(w http.ResponseWriter, r *http.Request) {
 		api.DroneAPIs.GetLoadedMedications(w, r)
