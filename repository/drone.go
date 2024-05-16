@@ -63,5 +63,5 @@ func (dDB *DroneRepository) GetLoadedMedications(ctx context.Context, serialNumb
 	if err := dDB.client.Preload("Medications").Where("serial_number = ?", serialNumber).First(&drone).Error; err != nil {
 		return []entity.Medication{}, err
 	}
-	return drone.Medications, nil
+	return []entity.Medication{}, nil
 }

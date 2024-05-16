@@ -11,7 +11,6 @@ type Drone struct {
 	WeightLimit     float64        `gorm:"not null;check:weight_limit <= 500"`
 	BatteryCapacity uint           `gorm:"not null;check:battery_capacity <= 100"`
 	State           DroneStateEnum `gorm:"not null;default:IDLE"`
-	Medications     []Medication   `gorm:"many2many:drone_medications;"`
 }
 type DroneModelEnum string
 
