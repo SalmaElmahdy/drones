@@ -32,8 +32,9 @@ func main() {
 
 	droneRepo := repository.NewDroneRepository(db)
 	medicationRepo := repository.NewMedicationRepository(db)
+	orderRepo := repository.NewOrderRepository(db)
 
-	droneUseCase := usecase.NewDroneUseCase(droneRepo, medicationRepo)
+	droneUseCase := usecase.NewDroneUseCase(droneRepo, medicationRepo, orderRepo)
 	medicationUseCase := usecase.NewMedicationUseCase(medicationRepo)
 
 	droneAPIs := apis.NewDroneAPIs(droneUseCase)

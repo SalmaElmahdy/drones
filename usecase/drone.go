@@ -22,9 +22,10 @@ type IDroneUseCase interface {
 type DroneUseCase struct {
 	droneRepository      repository.IDroneRepository
 	medicationRepository repository.IMedicationRepository
+	orderRepository      repository.IOrderRepository
 }
 
-func NewDroneUseCase(droneRepository repository.IDroneRepository, medicationRepository repository.IMedicationRepository) IDroneUseCase {
+func NewDroneUseCase(droneRepository repository.IDroneRepository, medicationRepository repository.IMedicationRepository, orderRepository repository.IOrderRepository) IDroneUseCase {
 	return DroneUseCase{
 		droneRepository:      droneRepository,
 		medicationRepository: medicationRepository,
@@ -100,6 +101,12 @@ func (d DroneUseCase) LoadMedications(ctx context.Context, request []byte) ([]by
 		return []byte{}, err
 	}
 
+	if drone.BatteryCapacity < 25 {
+		err := errors.New("can not load medications battery level is below 25%")
+		fmt.Printf("[Error]: %v", err.Error())
+		return []byte{}, err
+	}
+
 	drone.State = entity.LOADING
 	drone, err = d.droneRepository.Update(ctx, drone)
 	if err != nil {
@@ -108,6 +115,8 @@ func (d DroneUseCase) LoadMedications(ctx context.Context, request []byte) ([]by
 	}
 
 	currentMedicationWeight := 0.0
+	var orderData []entity.Order
+
 	for _, reqMedication := range loadMedicationRequest.Medications {
 
 		reqMedicationObj := entity.Medication{
@@ -123,18 +132,17 @@ func (d DroneUseCase) LoadMedications(ctx context.Context, request []byte) ([]by
 			return []byte{}, err
 		}
 
+		//TODO:: need to check if medication already exist in that order
 		currentMedicationWeight += medication.Weight
 		if currentMedicationWeight <= drone.WeightLimit {
-			// droneMedication := entity.DroneMedications{
-			// 	DroneID:      drone.ID,
-			// 	MedicationID: medication.ID,
-			// 	OrderNumber:  1,
-			// }
-			// err := d.droneRepository.AppendMedication(ctx, droneMedication)
-			// if err != nil {
-			// 	fmt.Printf("[Error]: %v", err.Error())
-			// 	return []byte{}, err
-			// }
+			orderObj := entity.Order{
+				DroneID:      drone.ID,
+				Drone:        drone,
+				MedicationID: medication.ID,
+				Medication:   medication,
+				Quantity:     1,
+			}
+			orderData = append(orderData, orderObj)
 		} else {
 			err := errors.New("medications exceed drone's weight limit")
 			fmt.Printf("[Error]: %v", err.Error())
@@ -142,7 +150,11 @@ func (d DroneUseCase) LoadMedications(ctx context.Context, request []byte) ([]by
 		}
 
 	}
-
+	orders, err := d.orderRepository.Create(ctx, orderData)
+	if err != nil {
+		fmt.Printf("[Error]: %v", err.Error())
+		return []byte{}, err
+	}
 	drone.State = entity.LOADED
 	drone, err = d.droneRepository.Update(ctx, drone)
 	if err != nil {
@@ -156,7 +168,7 @@ func (d DroneUseCase) LoadMedications(ctx context.Context, request []byte) ([]by
 		fmt.Printf("[Error]: %v", err.Error())
 		return []byte{}, err
 	}
-	return json.Marshal(drone)
+	return json.Marshal(orders)
 }
 
 func (d DroneUseCase) UpdateDroneState(ctx context.Context, request []byte) ([]byte, error) {
@@ -178,13 +190,10 @@ func (d DroneUseCase) UpdateDroneState(ctx context.Context, request []byte) ([]b
 		return []byte{}, err
 	}
 
-	err = ValidateDroneStateTransition(existDrone.State, updateDroneStateRequest.State)
-	if err != nil {
-		fmt.Printf("[Error]: %v", err.Error())
-		return []byte{}, err
+	transitionResult := existDrone.Transition(updateDroneStateRequest.State)
+	if !transitionResult.Successful {
+		return []byte{}, fmt.Errorf("[Error]: %v", transitionResult.Message)
 	}
-
-	existDrone.State = updateDroneStateRequest.State
 
 	existDrone, err = d.droneRepository.Update(ctx, existDrone)
 	if err != nil {
@@ -192,33 +201,4 @@ func (d DroneUseCase) UpdateDroneState(ctx context.Context, request []byte) ([]b
 		return []byte{}, err
 	}
 	return json.Marshal(existDrone)
-}
-
-func ValidateDroneStateTransition(currentState, newState entity.DroneStateEnum) error {
-	const validationMessage = "[Error]: invalid state transition: current state must be %v, got %v"
-	switch newState {
-	case entity.IDLE:
-		if currentState != entity.RETURNING {
-			return fmt.Errorf(validationMessage, entity.RETURNING, currentState)
-		}
-	case entity.LOADING:
-		if currentState != entity.IDLE {
-			return fmt.Errorf(validationMessage, entity.IDLE, currentState)
-		}
-	case entity.LOADED:
-		if currentState != entity.LOADING {
-			return fmt.Errorf(validationMessage, entity.LOADING, currentState)
-		}
-	case entity.DELIVERED:
-		if currentState != entity.LOADED {
-			return fmt.Errorf(validationMessage, entity.LOADING, currentState)
-		}
-	case entity.RETURNING:
-		if currentState != entity.DELIVERED {
-			return fmt.Errorf(validationMessage, entity.DELIVERED, currentState)
-		}
-	default:
-		return fmt.Errorf("[Error]: invalid new state: %v", newState)
-	}
-	return nil
 }

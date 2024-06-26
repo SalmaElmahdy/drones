@@ -1,6 +1,8 @@
 package entity
 
 import (
+	"fmt"
+
 	"gorm.io/gorm"
 )
 
@@ -48,4 +50,46 @@ type LoadMedicationsRequest struct {
 type UpdateDroneStateRequest struct {
 	SerialNumber string         `json:"serial_number" valid:"required~serial_number is required,int~serial_number accepts only numbers"`
 	State        DroneStateEnum `json:"state" valid:"required~state is required,state"`
+}
+
+type TransitionResponse struct {
+	Successful bool
+	NewState   DroneStateEnum
+	Message    string
+}
+
+func (d *Drone) Transition(newState DroneStateEnum) TransitionResponse {
+	allowedTransitions := map[DroneStateEnum][]DroneStateEnum{
+		IDLE:       {LOADING},
+		LOADING:    {LOADED},
+		LOADED:     {DELIVERING},
+		DELIVERING: {DELIVERED},
+		DELIVERED:  {RETURNING},
+		RETURNING:  {IDLE},
+	}
+
+	if _, ok := allowedTransitions[d.State]; !ok {
+		return TransitionResponse{
+			Successful: false,
+			NewState:   d.State,
+			Message:    fmt.Sprintf("Invalid transition from %s to %s", d.State, newState),
+		}
+	}
+
+	for _, allowed := range allowedTransitions[d.State] {
+		if allowed == newState {
+			d.State = newState
+			return TransitionResponse{
+				Successful: true,
+				NewState:   newState,
+				Message:    fmt.Sprintf("Drone state changed from %s to %s", d.State, newState),
+			}
+		}
+	}
+
+	return TransitionResponse{
+		Successful: false,
+		NewState:   d.State,
+		Message:    fmt.Sprintf("Transition from %s to %s is not allowed", d.State, newState),
+	}
 }
