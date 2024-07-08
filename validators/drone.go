@@ -1,6 +1,7 @@
 package validators
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -40,4 +41,19 @@ func ValidateUpdateDroneStateRequest(updatDroneStateRequest entity.UpdateDroneSt
 	}
 	return nil
 
+}
+
+func ValidateLoadDroneState(drone entity.Drone) error {
+	if drone.State != entity.IDLE {
+		return errors.New("invalid drone state")
+	}
+
+	return nil
+}
+
+func ValidateLoadDroneBatteryCapacity(drone entity.Drone) error {
+	if drone.BatteryCapacity < 25 {
+		return errors.New("cannot load medications: battery level is below 25%")
+	}
+	return nil
 }
