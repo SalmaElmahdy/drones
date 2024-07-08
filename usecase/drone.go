@@ -29,6 +29,7 @@ func NewDroneUseCase(droneRepository repository.IDroneRepository, medicationRepo
 	return DroneUseCase{
 		droneRepository:      droneRepository,
 		medicationRepository: medicationRepository,
+		orderRepository:      orderRepository,
 	}
 }
 
@@ -83,92 +84,45 @@ func (d DroneUseCase) GetLoadedMedications(ctx context.Context, serialNumber str
 func (d DroneUseCase) LoadMedications(ctx context.Context, request []byte) ([]byte, error) {
 	loadMedicationRequest := entity.LoadMedicationsRequest{}
 	err := json.Unmarshal(request, &loadMedicationRequest)
+	var createdOrders []entity.Order
 
 	if err != nil {
 		fmt.Printf("[Error]: %v", err.Error())
 		return []byte{}, err
 	}
 
-	drone, err := d.droneRepository.FindBySerialNumber(ctx, loadMedicationRequest.SerialNumber)
-	if err != nil {
-		fmt.Printf("[Error]: %v", err.Error())
-		return []byte{}, err
-	}
-
-	if drone.State != entity.IDLE {
-		err := errors.New("invalid drone state")
-		fmt.Printf("[Error]: %v", err.Error())
-		return []byte{}, err
-	}
-
-	if drone.BatteryCapacity < 25 {
-		err := errors.New("can not load medications battery level is below 25%")
-		fmt.Printf("[Error]: %v", err.Error())
-		return []byte{}, err
-	}
-
-	drone.State = entity.LOADING
-	drone, err = d.droneRepository.Update(ctx, drone)
-	if err != nil {
-		fmt.Printf("[Error]: %v", err.Error())
-		return []byte{}, err
-	}
-
-	currentMedicationWeight := 0.0
-	var orderData []entity.Order
-
-	for _, reqMedication := range loadMedicationRequest.Medications {
-
-		reqMedicationObj := entity.Medication{
-			Name:   reqMedication.Name,
-			Weight: reqMedication.Weight,
-			Code:   reqMedication.Code,
-			Image:  reqMedication.Image,
-		}
-
-		medication, err := d.medicationRepository.FirstOrCreate(ctx, reqMedicationObj)
+	err = d.droneRepository.WithTransaction(ctx, func() error {
+		drone, err := d.droneRepository.FindBySerialNumber(ctx, loadMedicationRequest.SerialNumber)
 		if err != nil {
-			fmt.Printf("[Error]: %v", err.Error())
-			return []byte{}, err
+			return err
 		}
 
-		//TODO:: need to check if medication already exist in that order
-		currentMedicationWeight += medication.Weight
-		if currentMedicationWeight <= drone.WeightLimit {
-			orderObj := entity.Order{
-				DroneID:      drone.ID,
-				Drone:        drone,
-				MedicationID: medication.ID,
-				Medication:   medication,
-				Quantity:     1,
-			}
-			orderData = append(orderData, orderObj)
-		} else {
-			err := errors.New("medications exceed drone's weight limit")
-			fmt.Printf("[Error]: %v", err.Error())
-			return []byte{}, err
+		if err := validators.ValidateLoadDroneState(drone); err != nil {
+			return err
 		}
 
-	}
-	orders, err := d.orderRepository.Create(ctx, orderData)
-	if err != nil {
-		fmt.Printf("[Error]: %v", err.Error())
-		return []byte{}, err
-	}
-	drone.State = entity.LOADED
-	drone, err = d.droneRepository.Update(ctx, drone)
+		if err := validators.ValidateLoadDroneBatteryCapacity(drone); err != nil {
+			return err
+		}
+
+		transitionResult := drone.Transition(entity.LOADING)
+		if !transitionResult.Successful {
+			return errors.New(transitionResult.Message)
+		}
+
+		if createdOrders, err = d.createOrder(ctx, drone, loadMedicationRequest.Medications); err != nil {
+			return err
+		}
+
+		return nil
+	})
+
 	if err != nil {
 		fmt.Printf("[Error]: %v", err.Error())
 		return []byte{}, err
 	}
 
-	drone.State = entity.DELIVERED
-	drone, err = d.droneRepository.Update(ctx, drone)
-	if err != nil {
-		fmt.Printf("[Error]: %v", err.Error())
-		return []byte{}, err
-	}
-	return json.Marshal(orders)
+	return json.Marshal(createdOrders)
 }
 
 func (d DroneUseCase) UpdateDroneState(ctx context.Context, request []byte) ([]byte, error) {
@@ -201,4 +155,55 @@ func (d DroneUseCase) UpdateDroneState(ctx context.Context, request []byte) ([]b
 		return []byte{}, err
 	}
 	return json.Marshal(existDrone)
+}
+
+func (d DroneUseCase) createOrder(ctx context.Context, drone entity.Drone, medications []entity.MedicationRequest) ([]entity.Order, error) {
+	var orderData []entity.Order
+	currentMedicationWeight := 0.0
+
+	for _, reqMedication := range medications {
+
+		reqMedicationObj := entity.Medication{
+			Name:   reqMedication.Name,
+			Weight: reqMedication.Weight,
+			Code:   reqMedication.Code,
+			Image:  reqMedication.Image,
+		}
+
+		medication, err := d.medicationRepository.FirstOrCreate(ctx, reqMedicationObj)
+		if err != nil {
+			return nil, err
+		}
+
+		//TODO:: need to check if medication already exist in that order
+		currentMedicationWeight += medication.Weight
+		if currentMedicationWeight <= drone.WeightLimit {
+			orderObj := entity.Order{
+				DroneID:      drone.ID,
+				Drone:        drone,
+				MedicationID: medication.ID,
+				Medication:   medication,
+				Quantity:     1,
+			}
+			orderData = append(orderData, orderObj)
+		} else {
+			err := errors.New("medications exceed drone's weight limit")
+			return nil, err
+		}
+
+	}
+	createdOrder, err := d.orderRepository.Create(ctx, orderData)
+	if err != nil {
+		return nil, err
+	}
+	transitionResult := drone.Transition(entity.LOADED)
+	if !transitionResult.Successful {
+		return nil, errors.New(transitionResult.Message)
+	}
+
+	transitionResult = drone.Transition(entity.DELIVERING)
+	if !transitionResult.Successful {
+		return nil, errors.New(transitionResult.Message)
+	}
+	return createdOrder, nil
 }

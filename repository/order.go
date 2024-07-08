@@ -21,8 +21,7 @@ func NewOrderRepository(client *gorm.DB) IOrderRepository {
 	}
 }
 
-func (oDB OrderRepository) Create(ctx context.Context, order []entity.Order) ([]entity.Order, error) {
-	var orders []entity.Order
+func (oDB OrderRepository) Create(ctx context.Context, orders []entity.Order) ([]entity.Order, error) {
 	err := oDB.client.WithContext(ctx).Create(&orders).Error
 	return orders, err
 }
