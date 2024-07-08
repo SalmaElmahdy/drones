@@ -13,6 +13,7 @@ type IDroneRepository interface {
 	Update(ctx context.Context, drone entity.Drone) (entity.Drone, error)
 	FindBySerialNumber(ctx context.Context, serialNumber string) (entity.Drone, error)
 	GetLoadedMedications(ctx context.Context, serialNumber string) ([]entity.Medication, error)
+	WithTransaction(ctx context.Context, fn func() error) error
 }
 
 type DroneRepository struct {
@@ -60,4 +61,24 @@ func (dDB *DroneRepository) GetLoadedMedications(ctx context.Context, serialNumb
 		return []entity.Medication{}, err
 	}
 	return []entity.Medication{}, nil
+}
+
+func (dDB *DroneRepository) WithTransaction(ctx context.Context, fn func() error) error {
+	tx := dDB.client.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+			panic(r)
+		} else if err := recover(); err != nil {
+			tx.Rollback()
+			return
+		}
+	}()
+
+	err := fn()
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	return tx.Commit().Error
 }
