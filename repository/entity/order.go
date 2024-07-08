@@ -6,6 +6,7 @@ import (
 
 type Order struct {
 	gorm.Model
+	OrderNumber  string
 	DroneID      uint
 	Drone        Drone
 	MedicationID uint
