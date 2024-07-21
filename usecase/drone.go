@@ -9,6 +9,7 @@ import (
 	"github.com/SalmaElmahdy/drones/repository"
 	"github.com/SalmaElmahdy/drones/repository/entity"
 	"github.com/SalmaElmahdy/drones/validators"
+	"github.com/google/uuid"
 )
 
 type IDroneUseCase interface {
@@ -160,6 +161,7 @@ func (d DroneUseCase) UpdateDroneState(ctx context.Context, request []byte) ([]b
 func (d DroneUseCase) createOrder(ctx context.Context, drone entity.Drone, medications []entity.MedicationRequest) ([]entity.Order, error) {
 	var orderData []entity.Order
 	currentMedicationWeight := 0.0
+	uuid := uuid.New()
 
 	for _, reqMedication := range medications {
 
@@ -179,6 +181,7 @@ func (d DroneUseCase) createOrder(ctx context.Context, drone entity.Drone, medic
 		currentMedicationWeight += medication.Weight
 		if currentMedicationWeight <= drone.WeightLimit {
 			orderObj := entity.Order{
+				OrderNumber:  uuid,
 				DroneID:      drone.ID,
 				Drone:        drone,
 				MedicationID: medication.ID,
