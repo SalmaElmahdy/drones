@@ -181,7 +181,7 @@ func (d DroneUseCase) createOrder(ctx context.Context, drone entity.Drone, medic
 		currentMedicationWeight += medication.Weight
 		if currentMedicationWeight <= drone.WeightLimit {
 			orderObj := entity.Order{
-				OrderNumber:  uuid,
+				OrderNumber:  uuid.String(),
 				DroneID:      drone.ID,
 				Drone:        drone,
 				MedicationID: medication.ID,
