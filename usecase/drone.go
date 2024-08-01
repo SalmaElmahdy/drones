@@ -92,29 +92,34 @@ func (d DroneUseCase) LoadMedications(ctx context.Context, request []byte) ([]by
 		return []byte{}, err
 	}
 
+	drone, err := d.droneRepository.FindBySerialNumber(ctx, loadMedicationRequest.SerialNumber)
+	if err != nil {
+		return []byte{}, err
+	}
+
+	if err := validators.ValidateLoadDroneState(drone); err != nil {
+		return []byte{}, err
+	}
+
+	if err := validators.ValidateLoadDroneBatteryCapacity(drone); err != nil {
+		return []byte{}, err
+	}
+
 	err = d.droneRepository.WithTransaction(ctx, func() error {
-		drone, err := d.droneRepository.FindBySerialNumber(ctx, loadMedicationRequest.SerialNumber)
-		if err != nil {
+		if drone, err = d.updateState(ctx, drone, string(entity.LOADING)); err != nil {
 			return err
 		}
-
-		if err := validators.ValidateLoadDroneState(drone); err != nil {
-			return err
-		}
-
-		if err := validators.ValidateLoadDroneBatteryCapacity(drone); err != nil {
-			return err
-		}
-
-		transitionResult := drone.Transition(entity.LOADING)
-		if !transitionResult.Successful {
-			return errors.New(transitionResult.Message)
-		}
-
 		if createdOrders, err = d.createOrder(ctx, drone, loadMedicationRequest.Medications); err != nil {
 			return err
 		}
-
+		drone, err = d.updateState(ctx, drone, string(entity.LOADED))
+		if err != nil {
+			return err
+		}
+		drone, err = d.updateState(ctx, drone, string(entity.DELIVERING))
+		if err != nil {
+			return err
+		}
 		return nil
 	})
 
@@ -158,8 +163,21 @@ func (d DroneUseCase) UpdateDroneState(ctx context.Context, request []byte) ([]b
 	return json.Marshal(existDrone)
 }
 
+func (d DroneUseCase) updateState(ctx context.Context, drone entity.Drone, state string) (entity.Drone, error) {
+	transitionResult := drone.Transition(entity.DroneStateEnum(state))
+	if !transitionResult.Successful {
+		return entity.Drone{}, errors.New(transitionResult.Message)
+	}
+	drone.State = entity.DroneStateEnum(state)
+	drone, err := d.droneRepository.Update(ctx, drone)
+	if err != nil {
+		return entity.Drone{}, err
+	}
+	return drone, nil
+}
+
 func (d DroneUseCase) createOrder(ctx context.Context, drone entity.Drone, medications []entity.MedicationRequest) ([]entity.Order, error) {
-	var orderData []entity.Order
+	orderData := make(map[string]entity.Order)
 	currentMedicationWeight := 0.0
 	uuid := uuid.New()
 
@@ -177,36 +195,37 @@ func (d DroneUseCase) createOrder(ctx context.Context, drone entity.Drone, medic
 			return nil, err
 		}
 
-		//TODO:: need to check if medication already exist in that order
 		currentMedicationWeight += medication.Weight
+
 		if currentMedicationWeight <= drone.WeightLimit {
-			orderObj := entity.Order{
-				OrderNumber:  uuid.String(),
-				DroneID:      drone.ID,
-				Drone:        drone,
-				MedicationID: medication.ID,
-				Medication:   medication,
-				Quantity:     1,
+			if data, found := orderData[medication.Code]; found {
+				data.Quantity += 1
+				orderData[medication.Code] = data
+			} else {
+				orderObj := entity.Order{
+					OrderNumber:  uuid.String(),
+					DroneID:      drone.ID,
+					Drone:        drone,
+					MedicationID: medication.ID,
+					Medication:   medication,
+					Quantity:     1,
+				}
+				orderData[medication.Code] = orderObj
 			}
-			orderData = append(orderData, orderObj)
+
 		} else {
 			err := errors.New("medications exceed drone's weight limit")
 			return nil, err
 		}
-
 	}
-	createdOrder, err := d.orderRepository.Create(ctx, orderData)
+
+	orderList := make([]entity.Order, 0, len(orderData))
+	for _, obj := range orderData {
+		orderList = append(orderList, obj)
+	}
+	createdOrder, err := d.orderRepository.Create(ctx, orderList)
 	if err != nil {
 		return nil, err
-	}
-	transitionResult := drone.Transition(entity.LOADED)
-	if !transitionResult.Successful {
-		return nil, errors.New(transitionResult.Message)
-	}
-
-	transitionResult = drone.Transition(entity.DELIVERING)
-	if !transitionResult.Successful {
-		return nil, errors.New(transitionResult.Message)
 	}
 	return createdOrder, nil
 }
