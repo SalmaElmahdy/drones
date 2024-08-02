@@ -56,11 +56,26 @@ func (dDB *DroneRepository) Update(ctx context.Context, drone entity.Drone) (ent
 }
 
 func (dDB *DroneRepository) GetLoadedMedications(ctx context.Context, serialNumber string) ([]entity.Medication, error) {
-	var drone entity.Drone
-	if err := dDB.client.Preload("Medications").Where("serial_number = ?", serialNumber).First(&drone).Error; err != nil {
-		return []entity.Medication{}, err
+	var orders []entity.Order
+	var medications []entity.Medication
+
+	err := dDB.client.Joins("JOIN orders ON medications.id = orders.medication_id").
+		Joins("JOIN drones ON orders.drone_id = drones.id").
+		Where("drones.serial_number = ?", serialNumber).
+		Where("orders.state = ?", entity.PROCESSING).
+		Where("orders.deleted_at IS NULL").
+		Find(&medications).Error
+
+	if err != nil {
+		return nil, err
 	}
-	return []entity.Medication{}, nil
+
+	for _, order := range orders {
+		medications = append(medications, order.Medication)
+	}
+
+	return medications, nil
+
 }
 
 func (dDB *DroneRepository) WithTransaction(ctx context.Context, fn func() error) error {
