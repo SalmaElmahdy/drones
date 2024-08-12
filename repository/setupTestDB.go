@@ -7,12 +7,12 @@ import (
 )
 
 func SetupTestDatabase() (*gorm.DB, error) {
-	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+	db, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{})
 	if err != nil {
 		return nil, err
 	}
 
-	err = db.AutoMigrate(&entity.Drone{}, &entity.Medication{})
+	err = db.AutoMigrate(&entity.Drone{}, &entity.Medication{}, &entity.Order{})
 	if err != nil {
 		return nil, err
 	}

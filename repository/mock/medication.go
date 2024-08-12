@@ -5,12 +5,13 @@ import (
 
 	"github.com/SalmaElmahdy/drones/repository"
 	"github.com/SalmaElmahdy/drones/repository/entity"
+	"gorm.io/gorm"
 )
 
 type MockedMedicationRepository struct{}
 
-func NewMockedMedicationRepository() repository.IMedicationRepository {
-	return nil
+func NewMockedMedicationRepository(db *gorm.DB) repository.IMedicationRepository {
+	return repository.NewMedicationRepository(db)
 }
 
 func (MockedMedicationRepository) Create(ctx context.Context, medication entity.Medication) (entity.Medication, error) {

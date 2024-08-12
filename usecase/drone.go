@@ -215,6 +215,10 @@ func (d DroneUseCase) createOrder(ctx context.Context, drone entity.Drone, medic
 
 		} else {
 			err := errors.New("medications exceed drone's weight limit")
+			drone.State = entity.IDLE
+			if _, err := d.droneRepository.Update(ctx, drone); err != nil {
+				return nil, err
+			}
 			return nil, err
 		}
 	}
